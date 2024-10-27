@@ -1,11 +1,24 @@
 # upgraded-engine
-A project that simulates time of a workflow.
+A project that simulates time of a workflow, like in a factory or a process with multiple steps.
 
-Uses java reactive streams to do the simulation.
+To route output work-items, add a list with several handover coworkers to a 
+coworker. 
 
-To do next: work-item router, that can send work-items to one of many 
-subscribers.
+To count items for a finish condition, use a counter. 
 
+To run the example, use ./gradlew run
 
-To run use ./gradlew run
+An example of a flow as a graph:
+
+A -> B
+B -> C
+
+C -> D
+C -> E
+C -> F
+
+D -> Counter
+E -> Counter
+F -> Counter
+
 
