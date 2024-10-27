@@ -5,37 +5,34 @@ package upgraded.engine;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ArrayList;
 
-import java.util.concurrent.Flow.*;
-import java.util.concurrent.SubmissionPublisher;
-import java.util.concurrent.SubmissionPublisher;
-import java.util.concurrent.atomic.AtomicInteger;
-
+/**
+ * This file represents a configuration of a specific workflow, this might just be temporary
+ */
 public class App {
     
-    public static void main(String[] args) throws InterruptedException{
-        SubmissionPublisher<String> workleader = new SubmissionPublisher<>();
-        Worker<String> firstworker = new Worker<>(5);
-        Worker<String> secondworker = new Worker<>(20);
-        CounterSubscriber<String> counter = new CounterSubscriber<>(i -> i%75 == 0);
-        workleader.subscribe(firstworker);
-        firstworker.subscribe(secondworker);
-        secondworker.subscribe(counter);
-
-        long initialtime = System.currentTimeMillis();
-
+    public static void main(String[] args) throws InterruptedException {
         
+        Counter<String> counter = new Counter<>();  
+
+        ProcessorWorker dryer1 = new ProcessorWorker(List.of(counter), 28800, 5);
+        ProcessorWorker dryer2 = new ProcessorWorker(List.of(counter), 28800, 5);
+        ProcessorWorker dryer3 = new ProcessorWorker(List.of(counter), 28800, 5); 
+
+        ProcessorWorker peeler = new ProcessorWorker(List.of(dryer1, dryer2, dryer3), 20, 1);
+        ProcessorWorker deseeder = new ProcessorWorker(List.of(peeler), 5, 1);
+
+        Manager manager = new Manager(List.of(counter, dryer1, dryer2, dryer3, peeler, deseeder), 
+            () -> counter.getCount() >= 1000);
+
         for (int i=0; i<1000; i++) {
-            workleader.submit("a");
+            deseeder.addWorkItem("a");
         }
 
-        workleader.close();
+        manager.run();
 
-        while(counter.getCount() < 1000) {
-
-        }
-
-        System.out.println("took " + (System.currentTimeMillis() - initialtime) + " timeunits");
+        System.out.println("time used: " + manager.getTime());
 
     }
 
